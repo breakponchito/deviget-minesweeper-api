@@ -26,5 +26,18 @@ Creating base componentes for the api
 - Creating the model
 - Creating the service
 
+Documenting components
+
+Adding unit testing for the service
+
+Creating client module for the game
+
+Adding components for the game
+
+- images
+- create starting page
+- create form
+ 
+
 
 

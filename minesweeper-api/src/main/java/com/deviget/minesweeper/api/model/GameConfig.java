@@ -5,6 +5,8 @@
  */
 package com.deviget.minesweeper.api.model;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import java.util.Arrays;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -12,13 +14,21 @@ import java.util.logging.Logger;
 /**
  * The GameConfig Model class
  */
+@Schema(name="GameConfig", description = "POJO that represents the Game.")
 public class GameConfig {
 
     private static final Logger logger = Logger.getLogger("GameConfig");
 
+    @Schema(required = true)
     private int rows;
+
+    @Schema(required = true)
     private int columns;
+
+    @Schema(required = true)
     private int mines;
+
+    @Schema(required = true)
     private int[][] configArray;
 
     private static final int MINE_IDENTIFIER = -1;
