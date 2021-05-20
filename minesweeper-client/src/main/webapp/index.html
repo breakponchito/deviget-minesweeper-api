@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Start Page</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style type="text/css">
+            .canvas {
+                border: 1px solid black;
+            }
+            .gameDiv {
+                position: absolute;
+                top:30%;
+                left:30%;
+                margin-top:-100px;
+                margin-left:-100px;
+            }
+
+    </style>
+</head>
+<body>
+<div class="gameDiv">
+    <form>
+        <label>Rows</label><br>
+        <input type="text" name="rows" id="rows"><br>
+        <label>Columns</label><br>
+        <input type="text" name="columns" id="columns"><br>
+        <label>Total Mines</label><br>
+        <input type="text" name="mines" id="mines"><br>
+        <label>Time in seconds</label><br>
+        <input id="timer" type="text" name="timer" value="0"><br>
+        <label>Mines left</label>
+        <input id="minesLeft" type="text" name="minesLeft"><br>
+        <input type="button" name="start" value="start" onclick="startGame()">
+    </form>
+
+    <canvas id="minessweeperCanvas"></canvas>
+</div>
+<script>
+            var images = loadGameImages();
+            var flagedCells = [];
+            var dataGame = [];
+            var dataLoaded;
+            var widthOfCell = 17;
+            var heightOfCell = 15;
+            var endGame = false;
+            var counterGameTime = 0;
+            var serviceAPIUrl;
+            var gameInterval;
+            var minesLeftGame = 0;
+
+            function loadGameImages() {
+                var imgCover = new Image();
+                imgCover.src = 'images/COVER_IMG.PNG';
+                var imgMark = new Image();
+                imgMark.src = 'images/QUESTION_IMG.png';
+                var imgMine = new Image();
+                imgMine.src = 'images/MINE_IMG.png';
+                var imgOne = new Image();
+                imgOne.src = 'images/ONE_IMG.png';
+                var imgTwo = new Image();
+                imgTwo.src = 'images/TWO_IMG.png';
+                var imgThree = new Image();
+                imgThree.src = 'images/THREE_IMG.png';
+                var imgFour = new Image();
+                imgFour.src = 'images/FOUR_IMG.png';
+                var imgFive = new Image();
+                imgFive.src = 'images/FIVE_IMG.png';
+                var imgSix = new Image();
+                imgSix.src = 'images/SIX_IMG.png';
+                var imgSeven = new Image();
+                imgSeven.src = 'images/SEVEN_IMG.png';
+                var imgEight = new Image();
+                imgEight.src = 'images/EIGHT_IMG.png';
+                var imgMineCrashed = new Image();
+                imgMineCrashed.src = 'images/MINE_CRASHED_IMG.png';
+                var imgEmpty = new Image();
+                imgEmpty.src = 'images/EMPTY_IMG.png';
+                var images = [imgCover, imgMark, imgMine, imgOne, imgTwo,
+                    imgThree, imgFour, imgFive, imgSix, imgSeven, imgEight,
+                    imgMineCrashed, imgEmpty];
+                return images;
+            }
+
+            function startGame() {
+                endGame = false;
+                var rowsSelected = $("#rows").val();
+                var columnsSelected = $("#columns").val();
+                var minesSelected = $("#mines").val();
+                minesLeftGame = minesSelected;
+                console.log("rows:" + rowsSelected);
+                console.log("columns:" + columnsSelected);
+                console.log("minesSelected:" + minesSelected);
+                counterGameTime = 0;
+                if (gameInterval) {
+                    window.clearInterval(gameInterval);
+                }
+                $("#minesLeft").val(minesLeftGame);
+                $("#timer").val(counterGameTime);
+                if (rowsSelected && columnsSelected && minesSelected) {
+                    serviceAPIUrl =
+                            "http://localhost:9080/game/minesweeper/start/rows/"
+                            + rowsSelected + "/columns/" + columnsSelected
+                            + "/mines/" + minesSelected;
+                    $.ajax({
+                        url: serviceAPIUrl
+                    }).then(function (data) {
+                        dataLoaded = data;
+                        dataGame = data.configArray;
+                        //improve this
+                        flagedCells = data.configArray;
+                        console.log(dataGame);
+                        gameInterval = window.setInterval(gameTimer, 1000);
+                        paintGame();
+                    });
+                }
+            }
+
+            function verifyCell(event) {
+                console.log(event);
+                var colSelected = Math.floor(event.layerX / widthOfCell);
+                var rowSelected = Math.floor(event.layerY / heightOfCell);
+                var value = dataGame[rowSelected][colSelected];
+                switch (value) {
+                    case - 1:
+                        console.log("mine selected");
+                        showMinesGame(colSelected, rowSelected);
+                        break;
+                    case 0:
+                        console.log("empty cell selected");
+                        showCeroAndAdjacents(colSelected, rowSelected);
+                        break;
+                    case 1:
+                        console.log("one selected");
+                        showNumber(colSelected, rowSelected, 1);
+                        break;
+                    case 2:
+                        console.log("two selected");
+                        showNumber(colSelected, rowSelected, 2);
+                        break;
+                    case 3:
+                        console.log("three selected");
+                        showNumber(colSelected, rowSelected, 3);
+                        break;
+                    case 4:
+                        console.log("four selected");
+                        showNumber(colSelected, rowSelected, 4);
+                        break;
+                    case 5:
+                        console.log("five selected");
+                        showNumber(colSelected, rowSelected, 5);
+                        break;
+                    case 6:
+                        console.log("six selected");
+                        showNumber(colSelected, rowSelected, 6);
+                        break;
+                    case 7:
+                        console.log("seven selected");
+                        showNumber(colSelected, rowSelected, 7);
+                        break;
+                    case 8:
+                        console.log("eigth selected");
+                        showNumber(colSelected, rowSelected, 8);
+                        break;
+                }
+            }
+
+            function addFlag(event) {
+                console.log("addFlag:" + event);
+                var col = Math.floor(event.layerX / widthOfCell);
+                var row = Math.floor(event.layerY / heightOfCell);
+                if(flagedCells[row][col] == -2) {
+                    return;
+                }
+                console.log("colSelected for question mark:" + col);
+                console.log("rowSelected for question mark:" + row);
+                flagedCells[row][col] = -2;
+                var canvas = document.getElementById("minessweeperCanvas");
+                if (canvas.getContext) {
+                    var ctx = canvas.getContext("2d");
+                    ctx.restore();
+                    var xPosition = col * widthOfCell;
+                    var yPosition = row * heightOfCell;
+                    ctx.drawImage(images[1], xPosition, yPosition);
+                    ctx.save();
+                }
+                minesLeftGame--;
+                $("#minesLeft").val(minesLeftGame);
+                if (minesLeftGame == 0) {
+                    endGame = true;
+                    if (gameInterval) {
+                        window.clearInterval(gameInterval);
+                    }
+                }
+            }
+
+            function showMinesGame(col, row) {
+                console.log("showMinesGame");
+                endGame = true;
+                var canvas = document.getElementById("minessweeperCanvas");
+                if (canvas.getContext) {
+                    var ctx = canvas.getContext("2d");
+                    ctx.restore();
+                    var xPosition = col * widthOfCell;
+                    var yPosition = row * heightOfCell;
+                    ctx.drawImage(images[11], xPosition, yPosition);
+                    for (var r = 0; r < dataLoaded.rows; r++) {
+                        for (var c = 0; c < dataLoaded.columns; c++) {
+                            if (!(col == c && row == r) && flagedCells[r][c] != -2 && dataGame[r][c] == -1) {
+                                xPosition = c * widthOfCell;
+                                yPosition = r * heightOfCell;
+                                ctx.drawImage(images[2], xPosition, yPosition);
+                            }
+                        }
+                    }
+                    ctx.save();
+                }
+                if (gameInterval) {
+                    window.clearInterval(gameInterval);
+                }
+            }
+
+            function showCeroAndAdjacents(col, row) {
+                console.log("showCeroAndAdjacents");
+                var canvas = document.getElementById("minessweeperCanvas");
+                if (canvas.getContext) {
+                    var ctx = canvas.getContext("2d");
+                    ctx.restore();
+                    var xPosition = col * widthOfCell;
+                    var yPosition = row * heightOfCell;
+                    ctx.drawImage(images[12], xPosition, yPosition);
+                    flagedCells[row][col] = -3;
+                    for (var r = row - 1; r <= row + 1; r++) {
+                        for (var c = col - 1; c <= col + 1; c++) {
+                            if (c >= 0 && c < dataLoaded.columns && r >= 0 && r < dataLoaded.rows && dataGame != -1 && dataGame[r][c] != 0) {
+                                console.log("to show:" + dataGame[r][c]);
+                                showNumber(c, r, dataGame[r][c]);
+                            } else if(c>=0 && c < dataLoaded.columns && r>=0 && r < dataLoaded.rows && dataGame != -1 && flagedCells[r][c] != -3 && dataGame[r][c] == 0){
+                               showCeroAndAdjacents(c,r);
+                            }
+                        }
+                    }
+                }
+            }
+
+            function showNumber(col, row, number) {
+                var canvas = document.getElementById("minessweeperCanvas");
+                if (canvas.getContext) {
+                    var ctx = canvas.getContext("2d");
+                    ctx.save();
+                    var xPosition = col * widthOfCell;
+                    var yPosition = row * heightOfCell;
+
+                    switch (number) {
+                        case 1:
+                            ctx.restore();
+                            ctx.drawImage(images[3], xPosition, yPosition);
+                            break;
+                        case 2:
+                            ctx.restore();
+                            ctx.drawImage(images[4], xPosition, yPosition);
+                            break;
+                        case 3:
+                            ctx.restore();
+                            ctx.drawImage(images[5], xPosition, yPosition);
+                            break;
+                        case 4:
+                            ctx.restore();
+                            ctx.drawImage(images[6], xPosition, yPosition);
+                            break;
+                        case 5:
+                            ctx.restore();
+                            ctx.drawImage(images[7], xPosition, yPosition);
+                            break;
+                        case 6:
+                            ctx.restore();
+                            ctx.drawImage(images[8], xPosition, yPosition);
+                            break;
+                        case 7:
+                            ctx.restore();
+                            ctx.drawImage(images[9], xPosition, yPosition);
+                            break;
+                        case 8:
+                            ctx.restore();
+                            ctx.drawImage(images[10], xPosition, yPosition);
+                            break;
+                    }
+                    ctx.save();
+                }
+            }
+
+            //funtion to start painting the game with cover images
+            function paintGame() {
+                //starting canvas
+                var canvas = document.getElementById("minessweeperCanvas");
+                canvas.width = dataLoaded.columns * widthOfCell;
+                canvas.height = dataLoaded.rows * heightOfCell;
+
+                //add listeners
+                canvas.addEventListener('click', function (event) {
+                    if (!endGame) {
+                        verifyCell(event);
+                    }
+                });
+                canvas.addEventListener("contextmenu", function (event) {
+                    event.preventDefault();
+                    if (!endGame) {
+                        addFlag(event);
+                    }
+                });
+                if (canvas.getContext) {
+                    var ctx = canvas.getContext("2d");
+                    var x = 0;
+                    var y = 0;
+                    for (var row = 0; row < dataLoaded.rows; row++) {
+                        for (var col = 0; col < dataLoaded.columns; col++) {
+                            ctx.drawImage(images[0], x, y);
+                            x = x + images[0].width;
+                        }
+                        x = 0;
+                        y = y + images[0].height;
+                    }
+                    ctx.save();
+                }
+            }
+
+            //function to increment text from configured interval 1 second
+            function gameTimer() {
+                counterGameTime = counterGameTime + 1;
+                $("#timer").val(counterGameTime);
+            }
+
+</script>
+</body>
+</html>
