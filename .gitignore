@@ -1,0 +1,4 @@
+/minesweeper-api/target/
+/minesweeper-client/target/
+.idea
+*.iml
