@@ -104,7 +104,7 @@
                 $("#timer").val(counterGameTime);
                 if (rowsSelected && columnsSelected && minesSelected) {
                     serviceAPIUrl =
-                            "http://localhost:9080/game/minesweeper/start/rows/"
+                            "http://34.145.125.222:31000/game/minesweeper/start/rows/"
                             + rowsSelected + "/columns/" + columnsSelected
                             + "/mines/" + minesSelected;
                     $.get(serviceAPIUrl).done(function (data) {

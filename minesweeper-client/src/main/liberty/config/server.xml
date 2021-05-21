@@ -15,7 +15,7 @@
 
     <logging traceSpecification="com.ibm.ws.microprofile.health.*=all" />
 
-    <webApplication location="minesweeper-api.war" contextRoot="/" />
+    <webApplication location="minesweeper-client.war" contextRoot="/minesweeper-client" />
 
     <httpEndpoint httpPort="${default.http.port}" httpsPort="${default.https.port}" id="defaultHttpEndpoint"/>
 </server>
