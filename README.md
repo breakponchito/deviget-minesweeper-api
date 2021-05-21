@@ -30,13 +30,21 @@ Documenting components
 
 Adding unit testing for the service
 
-Creating client module for the game
-
 Adding components for the game
 
 - images
 - create starting page
 - create form
+
+>> adding to the gcp service using kubernetes engine
+
+fixing issue for cors and removing unnecessary modules from the project
+
+remaining work to do is the persistence
+
+- Ability to start a new game and preserve/resume the old ones
+- Persistence
+- Ability to support multiple users/accounts
  
 
 
